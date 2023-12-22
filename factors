@@ -1,55 +1,49 @@
-#!/usr/bin/python3
-import sys
-from sys import argv
+#!/usr/bin/env bash
+# RSA is a factors challenge
 
-"""
-File_name: factors
-Created: 19th of December, 2023
-Auth: David James Taiye (Official0mega)
-Size: undefined
-Project: RSA-Factoring-Challenge
-Status: submitted.
-"""
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
-def factorize(value):
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
 
-    """
-    # Factorize as many numbers as possible into..
-    # ..a product of two smaller numbers.
-    # VARIABLE(" "):
-    # factorize(int) Factorize all the things!
-    # Usage: factors <file>
-    # Output format: n=p*q
-    """
-    i = 2
+        echo "$num$num1*$num2"
+}
 
-    if value < 2:
-        return
-    print()
-    print(value, "<- ")
-    while value % i:
-        i += 1
-    print("{:.0f}={:.0f}*{:.0f}".format(value, value / i, i))
-    print()
-    print(value, "<- ")
+if [ $# -ne 1 ]
+then
+        echo 'Usage: factors <file>'
+        exit 1
+else
 
+        while read i
+        do
 
-if len(argv) != 2:
-    exit()
+                result=$(factor "$i")
+                check_factor $result
 
-try:
-    with open(argv[1]) as file:
-        line = file.readline()
-
-        while line != "":
-            value = int(line.split('\n')[0])
-            factorize(value)
-            line = file.readline()
-except FileNotFoundError:
-    print(f'File not found: {argv}')
-except ValueError:
-    print(f'Invalid input in the file: {argv}')
-except Exception as e:
-    print(f'An error occurred: {str(e)}')
-    pass
+        done < "$1"
+fi

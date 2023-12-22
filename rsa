@@ -1,47 +1,48 @@
-#!/usr/bin/python3
-import sys
+#!/usr/bin/env bash
+#rsa a challenge
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
-"""
-File_name: rsa
-Created: 28th of May, 2023
-Auth: Gabson John Samuel (Official0mega)
-Size: undefined
-Project: RSA-Factoring-Challenge
-Status: submitted.
-"""
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
 
-def factorization():
+        echo "$num$num1*$num2"
+}
 
-    """
-    # RSA Laboratories states that: for each RSA number n
-    # ...there exist prime numbers p and q such that
-    # n = p × q. The problem is to find these two primes, given only n.
-    # VARIABLE(" "):
-    # factorize(int) Factorize all the things!
-    # This task is the same as task 0, except:
-    # .....p and q are always prime numbers
-    # .....There is only one number in the files
-    # .....How far can you go in less than 5 second? 🤔🤔🤔
-    """
-    try:
-        files = sys.argv[1]
-        with open(files) as f:
-            for numbs in f:
-                numbs = int(numbs)
-                if numbs % 2 == 0:
-                    print("{}={}*{}".format(numbs, numbs // 2, 2))
-                    continue
-                run = 3
-                while run < numbs // 2:
-                    if numbs % run == 0:
-                        print("{}={}*{}".format(numbs, numbs // run, run))
-                        break
-                    run = run + 2
-                if run == (numbs // 2) + 1:
-                    print("{}={}*{}".format(numbs, numbs, 1))
-    except (IndexError):
-        pass
+if [ $# -ne 1 ]
+then
+        echo 'Usage: rsa <file>'
+        exit 1
+else
 
+        while read i
+        do
 
-factorization()
+                result=$(factor "$i")
+                check_factor $result
+
+        done < "$1"
+fi)
